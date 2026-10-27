@@ -1,0 +1,27 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX adonis: <https://biomedit.ch/rdf/sphn-schema/adonis#>
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?hospital ?patient_id ?stay_id ?start_date ?end_date ?mode ?type ?device
+WHERE {
+    ?adm a sphn:AdministrativeCase ;
+        sphn:hasIdentifier ?stay_id ;
+        sphn:hasAdmissionDateTime ?adm_date ;
+        sphn:hasDischargeDateTime ?dis_date ;
+        sphn:hasSubjectPseudoIdentifier ?patient .
+            
+    ?patient a sphn:SubjectPseudoIdentifier ;
+        sphn:hasIdentifier ?patient_id ;
+        sphn:hasDataProvider/sphn:hasInstitutionCode/sphn:hasName ?hospital .
+
+    ?ventilation a adonis:VentilationProcedure ;
+        sphn:hasStartDateTime ?start_date ;
+        sphn:hasEndDateTime ?end_date ;
+        sphn:hasModeCode/a/rdfs:label ?mode ; 
+        sphn:hasMedicalDevice/sphn:hasTypeCode/a/rdfs:label ?device ;
+        sphn:hasSubjectPseudoIdentifier ?patient . 
+
+    OPTIONAL{
+        ?ventilation sphn:hasTypeCode/a/rdfs:label ?type .
+    }
+}

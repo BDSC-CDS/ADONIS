@@ -1,0 +1,14 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+PREFIX adonis: <https://biomedit.ch/rdf/sphn-schema/adonis#>
+
+SELECT ?stay_id 
+	(IF(BOUND(?diagnosis),1,0) AS ?nec)
+WHERE {
+	?stay a sphn:AdministrativeCase ;
+          sphn:hasIdentifier ?stay_id .
+    
+    OPTIONAL {
+        ?diagnosis a adonis:NecrotizingEnterocolitisDiagnosis ; 
+             	   sphn:hasAdministrativeCase ?stay .
+    }
+}

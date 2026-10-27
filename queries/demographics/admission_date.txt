@@ -1,0 +1,11 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?stay_id
+                ?adm_date
+                ?disc_date
+WHERE {
+    ?stay a sphn:AdministrativeCase ;
+          sphn:hasAdmissionDateTime ?adm_date ;
+          sphn:hasDischargeDateTime ?disc_date ;
+          sphn:hasIdentifier ?stay_id .
+}

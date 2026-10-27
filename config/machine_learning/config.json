@@ -1,0 +1,392 @@
+{
+    "seed": 123,  
+
+    "use_gpu": true,
+    "gpu": 0,
+
+    "environment": "BioMedIT",
+    "experiment_type": "machine_learning",
+    "hospital": "CHUV",
+
+    "params": {
+        "upstream_period": 72,
+        "prediction_time": 1,
+        "batch_size": 16384,
+        "n_jobs": 1,
+        "threshold_tuning": true,
+        "tuning_strategy": "all",
+        "decay_rate": 0,
+        "cutoff": 32,
+        "min_recall": 0.8,
+        "penalty": -1,
+        "max_fpr": 0.3,
+        "return_train_score": false
+    },
+    
+    "paths": {
+        "project_path": "./",
+        "data_path": "./data/",
+        "dataset_file_name": "df_cases_controls.parquet",
+        "list_file_name": "list_variables.pkl",
+        "output_path": "./results/",
+        "figures_path": "./figures/",
+        "logs": "./logs/"
+    },
+
+    "mlflow": {
+        "path_to_checkpoint": "./data/"
+    },
+
+    "calibration": {
+        "enabled": true,
+        "method": "sigmoid"
+    },
+
+    "cross_validation": {
+        "outer_cv": {
+            "class_path": "sklearn.model_selection.StratifiedGroupKFold",
+            "init_args": {
+                "n_splits": 5
+            }
+        },
+        "inner_cv": {
+            "class_path": "sklearn.model_selection.StratifiedGroupKFold",
+            "init_args": {
+                "n_splits": 3
+            }
+        },
+        "test_cv": {
+            "class_path": "sklearn.model_selection.StratifiedGroupKFold",
+            "init_args": {
+                "n_splits": 2
+            }
+        }
+    },
+
+    "model": {
+        "undersampler": {
+            "class_path": "adonis_ml.machine_learning.undersampling.NonRandomUnderSampler",
+            "init_args": {
+                "sampling_column": "train_knn_0.1",
+                "data_fraction": 1.0,
+                "random_state": 42,
+                "verbose": false
+            }
+        },
+
+        "imputer": {
+            "class_path": "sklearn.impute.SimpleImputer",
+            "init_args": {
+                "strategy": "median"
+            }
+        },
+
+        "scaler": {
+            "class_path": "sklearn.preprocessing.StandardScaler"
+        },
+
+        "feature_selector": {
+            "class_path": "adonis_ml.machine_learning.feature_selection.FeatureSelector",
+            "init_args": {
+                "method": "lasso",
+                "params": {
+                    "penalty": "l1",
+                    "C": 0.1,
+                    "fit_intercept": true,
+                    "max_iter": 10000,
+                    "solver": "saga",
+                    "tol": 1e-3,
+                    "random_state": 42
+                },
+                "verbose": false
+            }
+        },
+
+        "models": {
+            "lr": {
+                "class_path": "sklearn.linear_model.LogisticRegression",
+                "init_args": {
+                    "penalty": "elasticnet",
+                    "fit_intercept": true,
+                    "solver": "saga",
+                    "l1_ratio": 0.5,
+                    "max_iter": 10000
+                }
+            },
+            "knn": {
+                "class_path": "sklearn.neighbors.KNeighborsClassifier",
+                "init_args": {
+                    "n_neighbors": 100,
+                    "weights": "distance",
+                    "metric": "euclidean",
+                    "n_jobs": -1
+                }
+            },
+            "svm": {
+                "class_path": "sklearn.svm.SVC",
+                "init_args": {
+                    "C": 0.5,
+                    "class_weight": "balanced",
+                    "kernel": "sigmoid",
+                    "probability": true
+                }
+            },
+            "rf": {
+                "class_path": "sklearn.ensemble.RandomForestClassifier",
+                "init_args": {
+                    "n_estimators": 100,
+                    "max_features": 0.3,
+                    "n_jobs": -1
+                }
+            },
+            "lgbm": {
+                "class_path": "lightgbm.LGBMClassifier",
+                "init_args": {
+                    "n_estimators": 200,
+                    "num_leaves": 31,
+                    "learning_rate": 0.05,
+                    "min_child_samples": 20,
+                    "subsample": 0.8,
+                    "colsample_bytree": 0.8,
+                    "n_jobs": -1,
+                    "verbose": -1
+                }
+            },
+            "xgb": {
+                "class_path": "xgboost.XGBClassifier",
+                "init_args": {
+                    "n_estimators": 150,
+                    "max_depth": 10,
+                    "learning_rate": 0.01,
+                    "subsample": 0.7,
+                    "objective": "binary:logistic"
+                }
+            },
+            "tabpfn": {
+                "class_path": "tabpfn.TabPFNClassifier",
+                "init_args": {
+                    "model_path": "./checkpoints/tabpfn-v3-classifier-v3_default.ckpt",
+                    "ignore_pretraining_limits": true
+                }
+            },
+            "tabicl": {
+                "class_path": "tabicl.TabICLClassifier",
+                "init_args": {
+                    "model_path": "./checkpoints/tabicl-classifier-v2-20260212.ckpt",
+                    "allow_auto_download": true,
+                    "kv_cache": true
+                }
+            }
+        },
+
+        "param_grid": {
+            "lr": {
+                "l1_ratio": [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+                "C": [0.1, 0.2, 0.5, 1.0]
+            },
+            "knn": {
+                "n_neighbors": [50, 100, 200],
+                "weights": ["uniform", "distance"],
+                "metric": ["euclidean", "cosine"]
+            },
+            "svm": {
+                "C": [0.1, 0.2, 0.5, 1.0, 5.0],
+                "kernel": ["linear","poly","rbf","sigmoid"]
+            },
+            "rf": {
+                "n_estimators": [150, 200, 250],
+                "max_depth": [5, 10, null],
+                "min_samples_leaf": [1, 5, 10]
+            },
+            "xgb": {
+                "n_estimators": [100, 150, 200],
+                "max_depth": [5, 10, 25, 50, 100]
+            },
+            "lgbm": {
+                "num_leaves": [15, 31, 63],
+                "learning_rate": [0.01, 0.05, 0.1],
+                "min_child_samples": [10, 50]
+            }
+        }
+    },
+
+    "subgroups": {
+        "sex": {
+            "type": "categorical",
+            "label": "Sex",
+            "mapping": {
+                "female": 0,
+                "male": 1
+            }
+        }, 
+        "birth_weight": {
+            "type": "range", 
+            "label": "Birth weight",
+            "order": ["≤750 g", "751-1000 g", "1001-1500 g", "1501-2500 g", ">2500 g"],
+            "bins": {
+                "≤750 g": [0, 750],
+                "751-1000 g": [751, 1000],
+                "1001-1500 g": [1001, 1500],
+                "1501-2500 g": [1501, 2500],
+                ">2500 g": [2501, 10000]
+            },
+            "ncols": 1
+        }, 
+        "ga_weeks": {
+            "type": "range", 
+            "label": "Gestational age",
+            "order": ["<28 weeks", "28-31 weeks", "32-36 weeks", "≥37 weeks"],
+            "bins": {
+                "<28 weeks": [0, 27],
+                "28-31 weeks": [28, 31],
+                "32-36 weeks": [32, 36],
+                "≥37 weeks": [37, 44]
+            },
+            "ncols": 1
+        },
+        "time_difference_days": {
+            "type": "date",
+            "label": "Time since admission",
+            "range": [0, 8]
+        },
+        "delta_nsofa": {
+            "type": "range",
+            "label": "Organ dysfunction severity",
+            "controls_in_all_groups": true,
+            "order": ["ΔnSOFA < 2", "ΔnSOFA ≥ 2"],
+            "bins": {
+                "ΔnSOFA < 2": [-99, 1],
+                "ΔnSOFA ≥ 2": [2, 99]
+            }
+        },
+        "death_hospital_7d": {
+            "type": "categorical",
+            "label": "7-day mortality",
+            "controls_in_all_groups": true,
+            "order": ["survived", "died"],
+            "mapping": {
+                "survived": 0,
+                "died": 1
+            }
+        },
+        "death_hospital_30d": {
+            "type": "categorical",
+            "label": "30-day mortality",
+            "controls_in_all_groups": true,
+            "order": ["survived", "died"],
+            "mapping": {
+                "survived": 0,
+                "died": 1
+            }
+        }
+    },
+
+    "metrics": {
+        "roc_auc": "roc_auc",
+        "p_roc_auc": "p_roc_auc",
+        "accuracy": "accuracy",
+        "balanced_accuracy": "balanced_accuracy",
+        "precision": "precision",
+        "recall": "recall",
+        "auprc": "average_precision",
+        "specificity": "specificity",
+        "f1": "f1",
+        "neg_brier_score": "neg_brier_score"
+    },
+
+    "selection_score_grid_search": "roc_auc_weighted",
+    "selection_score_threshold_tuning": "precision_with_recall_constraint_score",
+
+    "features": {
+      "spikes_drops": {
+        "extract": true,
+        "identifier": ["_nb_drops_corrected","_nb_spikes_corrected","_nb_outliers_corrected","_nb_drops_corrected_ext","_nb_spikes_corrected_ext","_nb_outliers_corrected_ext"],
+        "upstream": true
+      },
+      "trends": {
+        "extract": true,
+        "identifier": ["_slope_"],
+        "upstream": false
+      },
+      "std_feat": {
+        "extract": true,
+        "identifier": ["_std"],
+        "upstream": false
+      },
+      "kurt_skew": {
+        "extract": true,
+        "identifier": ["_skew"],
+        "upstream": true
+      },
+      "entropy": {
+        "extract": true,
+        "identifier": ["_ApEn","SampEn","FuzzEn"],
+        "upstream": true
+      }
+    },
+
+    "dataset": {
+        "aggregates": [
+            "avg_upstream",
+            "avg_last48h",
+            "avg_last24h",
+            "avg_last12h",
+            "avg_last6h",
+            "avg_last6hto12h",
+            "avg_last12hto24h",
+            "avg_last24hto48h",
+            "sd_last48h",
+            "sd_last24h",
+            "sd_last12h",
+            "sd_last6h"
+        ],
+
+        "columns_to_drop": [
+            "stay_id",
+            "hospital",
+            "time_difference_minutes",
+            "time_difference_hours",
+            "time_difference_days",
+            "time_hours_sepsis",
+            "time_difference_hours_sepsis",
+            "time_hours_ECM",
+            "time_difference_hours_ECM",
+            "sepsis_time",
+            "control_type",
+            "ref_septic_patient",
+            "hero_median",
+            "nSOFA_max",
+            "group",
+            "window_id",
+            "time_difference_hours_window",
+            "train_random_0.05", 
+            "train_random_0.1", 
+            "train_random_0.3",
+            "train_random_0.5",
+            "train_random_0.05_all", 
+            "train_random_0.1_all", 
+            "train_random_0.3_all",
+            "train_random_0.5_all",
+            "train_knn_0.05",
+            "train_knn_0.1", 
+            "train_knn_0.3",
+            "train_knn_0.5",
+            "train_knn_0.05_all",
+            "train_knn_0.1_all", 
+            "train_knn_0.3_all",
+            "train_knn_0.5_all",
+            "groups_knn_0.05",
+            "groups_knn_0.1",
+            "groups_knn_0.3",
+            "groups_knn_0.5",
+            "hero_max",
+            "source_hero"
+        ]
+    },
+
+    "ablation_variable_groups": {
+        "demographics": ["sex", "ga_weeks", "weight"],
+        "basic": ["HR", "SBP", "DBP", "RR", "SpO2", "bodyT"],
+        "advanced": ["FiO2", "MAP", "PEEP", "sf_ratio", "invasive", "ventilation", "VIS"]
+    }
+}

@@ -1,0 +1,20 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?stay_id ?value ?time ?source
+WHERE {
+    ?adm a sphn:AdministrativeCase ;
+            sphn:hasIdentifier ?stay_id .
+
+    ?event a sphn:AssessmentEvent ;
+        sphn:hasAdministrativeCase ?adm ;
+        sphn:hasDateTime ?time ;
+        sphn:hasAssessment ?assessment ;
+        sphn:hasSourceSystem/sphn:hasName ?source .
+    
+    ?assessment a sphn:Assessment ;
+        sphn:hasName ?name ;
+        sphn:hasResult/sphn:hasQuantity/sphn:hasValue ?value .
+
+    FILTER( ?name = "HeRO - Heart Rate Observation" )
+    # FILTER( ?source = "internal register" )
+}

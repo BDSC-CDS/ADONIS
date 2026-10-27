@@ -1,0 +1,45 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?stay_id ?start_date ?end_date ?ward
+WHERE {
+    {
+        ?stay a sphn:AdministrativeCase ;
+            sphn:hasIdentifier ?stay_id ;
+            sphn:hasSubjectPseudoIdentifier ?patient .
+        
+        ?patient a sphn:SubjectPseudoIdentifier ;
+                 sphn:hasDataProvider/sphn:hasInstitutionCode/sphn:hasName ?hospital .
+
+        ?encounter a sphn:HealthcareEncounter ;
+                   sphn:hasAdministrativeCase ?stay ;
+                   sphn:hasCurrentLocation ?current ;
+                   sphn:hasStartDateTime ?start_date ;
+                   sphn:hasEndDateTime ?end_date .
+
+        ?current a sphn:Location ;
+                 sphn:hasExact ?ward .
+
+        FILTER(?hospital = "CHUV")
+    }
+    UNION
+    {
+        ?stay a sphn:AdministrativeCase ;
+            sphn:hasIdentifier ?stay_id ;
+            sphn:hasSubjectPseudoIdentifier ?patient .
+        
+        ?patient a sphn:SubjectPseudoIdentifier ;
+                 sphn:hasDataProvider/sphn:hasInstitutionCode/sphn:hasName ?hospital .
+
+        ?encounter a sphn:HealthcareEncounter ;
+                   sphn:hasAdministrativeCase ?stay ;
+                   sphn:hasTherapeuticArea ?therapeutic ;
+                   sphn:hasStartDateTime ?start_date ;
+                   sphn:hasEndDateTime ?end_date .
+
+        ?therapeutic a sphn:TherapeuticArea ;
+                     sphn:hasSpecialtyName/rdfs:label ?ward .
+
+        FILTER(?hospital != "CHUV")
+    }
+}

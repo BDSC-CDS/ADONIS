@@ -1,0 +1,76 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+PREFIX adonis: <https://biomedit.ch/rdf/sphn-schema/adonis#>
+PREFIX snomed: <http://snomed.info/id/>
+
+SELECT ?stay_id 
+	(IF(BOUND(?confirmed_code),1,0) AS ?sepsis)
+    (IF(BOUND(?eos_code),1,0) AS ?sepsis_eos)
+    (IF(BOUND(?los_code),1,0) AS ?sepsis_los)
+    (IF(BOUND(?halos_code),1,0) AS ?sepsis_halos)
+    (IF(BOUND(?calos_code),1,0) AS ?sepsis_calos)
+    (IF(BOUND(?suspected_code),1,0) AS ?sepsis_not_confirmed)
+	?datetime_hemoculture
+    ?datetime_hemoculture_sepsis_not_confirmed
+    ?organism
+    ?infection
+WHERE {
+	?stay a sphn:AdministrativeCase ;
+          sphn:hasIdentifier ?stay_id .
+    
+    OPTIONAL {
+        ?neonatal_sepsis a adonis:NeonatalSepsis ; 
+            sphn:hasAdministrativeCase ?stay ;
+            adonis:hasTriggerOrganism/sphn:hasCode/rdf:type/rdfs:label ?organism .
+
+        OPTIONAL {
+            ?neonatal_sepsis sphn:hasCertaintyCode ?confirmed_code .
+            
+            ?confirmed_code a snomed:410605003 .
+
+            OPTIONAL {
+                ?neonatal_sepsis sphn:hasRecordDateTime ?datetime_hemoculture .
+            }
+
+            OPTIONAL {
+                ?neonatal_sepsis adonis:hasOnsetTypeCode ?los_code .
+
+                ?los_code a snomed:765107002 .
+
+                OPTIONAL {
+                    ?neonatal_sepsis adonis:hasAcquisitionModeCode ?halos_code .
+
+                    ?halos_code a snomed:277056009 .
+                }
+
+                OPTIONAL {
+                    ?neonatal_sepsis adonis:hasAcquisitionModeCode ?calos_code .
+
+                    ?calos_code a snomed:277057000 .
+                }
+            }
+
+            OPTIONAL {
+                ?neonatal_sepsis adonis:hasOnsetTypeCode ?eos_code .
+
+                ?eos_code a snomed:765106006 .
+            }
+        }
+
+        OPTIONAL {
+            ?neonatal_sepsis sphn:hasCertaintyCode ?suspected_code .
+            
+            ?suspected_code a snomed:415684004 .
+
+            OPTIONAL {
+                ?neonatal_sepsis sphn:hasRecordDateTime ?datetime_hemoculture_sepsis_not_confirmed .
+            }
+        }     
+
+        OPTIONAL {
+            ?neonatal_sepsis adonis:hasInfectionFocusCode/rdf:type/rdfs:label ?infection .
+        }
+
+    }
+}

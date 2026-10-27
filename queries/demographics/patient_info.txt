@@ -1,0 +1,14 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT ?patient_id 
+	   ?stay_id
+	   ?hospital
+WHERE {
+	?patient a sphn:SubjectPseudoIdentifier ;
+			 sphn:hasIdentifier ?patient_id ;
+			 sphn:hasDataProvider/sphn:hasInstitutionCode/sphn:hasName ?hospital .
+    
+    ?stay a sphn:AdministrativeCase ;
+          sphn:hasSubjectPseudoIdentifier ?patient ;
+          sphn:hasIdentifier ?stay_id .
+}

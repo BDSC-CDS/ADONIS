@@ -1,0 +1,16 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?patient_id 
+                (CONCAT(SUBSTR(STR(?birth_day), 4, 2), ".",
+                        SUBSTR(STR(?birth_month), 3, 2), ".",
+                        STR(?birth_year)) AS ?birth_date)
+WHERE {
+    ?patient a sphn:SubjectPseudoIdentifier ;
+            sphn:hasIdentifier ?patient_id .
+
+    ?birth a sphn:BirthDate ;
+           sphn:hasDay ?birth_day ;
+           sphn:hasMonth ?birth_month ;
+           sphn:hasYear ?birth_year ;
+           sphn:hasSubjectPseudoIdentifier ?patient .
+}

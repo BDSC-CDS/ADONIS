@@ -1,0 +1,13 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?patient_id 
+	   (?ga_value AS ?ga_days)
+	   (?ga_value/7 AS ?ga_weeks)
+WHERE {
+	?patient a sphn:SubjectPseudoIdentifier ;
+			 sphn:hasIdentifier ?patient_id .
+	
+	?ga a sphn:GestationalAgeAtBirth ;
+		sphn:hasQuantity/sphn:hasValue ?ga_value ;
+    	sphn:hasSubjectPseudoIdentifier ?patient .
+}

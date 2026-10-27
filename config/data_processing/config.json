@@ -1,0 +1,765 @@
+{
+  "environment": "BioMedIT",  
+
+  "experiment": {
+    "type": "data_extraction",
+
+    "extract_data": false,
+    "extract_demographics": false,
+    "extract_hero": false,
+    "extract_nsofa": false,
+
+    "hospitals": {
+      "CHUV": {
+        "original_name": "CHUV",
+        "name": "Lausanne University Hospital",
+        "wards": ["NAT - Hospit. néonat.", "NAT - Héb. SI néonat. A", "NAT - Héb. mixte néonat. D+E"],
+        "include": true
+      },
+      "KISPI": {
+        "original_name": "Universitäts-Kinderspital Zürich - Eleonorenstiftung",
+        "name": "Zurich Children Hospital",
+        "wards": ["Surgery", "Paediatrics", "Cardiology"],
+        "include": true
+      },
+      "USZ": {
+        "original_name": "University Hospital Zürich",
+        "name": "Zurich University Hospital",
+        "wards": ["Other"],
+        "include": true
+      }
+    },
+
+    "tags": {
+      "project": "ADONIS"
+    },
+
+    "params": {
+      "batch_size": 1000,
+      "upstream_period": 72,
+
+      "prediction_time": 1,
+      "transition": 0,
+
+      "forewarning_time": 12,
+      "nb_time_windows_sepsis": 3,
+      "shift_time_windows_sepsis": 6,
+      "include_all_sepsis": true,
+      "max_train_size": false,
+
+      "days_to_exclude": 2,
+      "max_gestational_age": 43,
+      "min_length_stay_hours": 48,
+      "supercontrols": false,
+      "self_controls": true,
+      "self_controls_time": 72,
+      "nb_to_select": 1,
+      "three_days": true,
+      "hours_to_exclude_abx": 72,
+      "sepsis_rate": [0.05, 0.10, 0.30, 0.50]
+    },
+
+    "logging": {
+      "checkpoint_freq": 1
+    },
+
+    "variables": {
+      "vitals": {
+        "HR": {
+          "extract": true,
+          "name_param": "HR",
+          "units": ["cblbeatcbrpermin", "permin"],
+          "min": 0,
+          "max": 300, 
+          "lab": false,
+          "impute": true,
+          "concept": "HeartRate",
+          "ffill_min": 90,
+          "ffill_max": 180, 
+          "ffill_limit": 120
+        },
+        "SpO2": {
+          "extract": true,
+          "name_param": "SpO2",
+          "units": ["percent"],
+          "min": 0,
+          "max": 100,
+          "lab": false,
+          "impute": true,
+          "concept": "OxygenSaturation",
+          "ffill_min": 88,
+          "ffill_max": 100, 
+          "ffill_limit": 120
+        },
+        "RR": {
+          "extract": true,
+          "name_param": "RR",
+          "units": ["cblbreathcbrpermin", "permin"],
+          "min": 0, 
+          "max": 140,
+          "lab": false,
+          "impute": true,
+          "concept": "RespiratoryRate",
+          "priority": ["SNOMED-CT-258104002","SNOMED-CT-258090004","SNOMED-CT-87982008"],
+          "ffill_min": 30,
+          "ffill_max": 65, 
+          "ffill_limit": 120
+        },
+        "SBP": {
+          "extract": true,
+          "name_param": "SBP",
+          "units": ["mmsblHgsbr"],
+          "min": 10,
+          "max": 160, 
+          "lab": false,
+          "impute": true,
+          "concept": "BloodPressure",
+          "ffill_min": 30,
+          "ffill_max": 90, 
+          "ffill_limit": 120
+        },
+        "DBP": {
+          "extract": true,
+          "name_param": "DBP",
+          "units": ["mmsblHgsbr"],
+          "min": 0,
+          "max": 100,
+          "lab": false,
+          "impute": true,
+          "concept": "BloodPressure",
+          "ffill_min": 10,
+          "ffill_max": 70, 
+          "ffill_limit": 120
+        },
+        "FiO2": {
+          "extract": true,
+          "name_param": "FiO2",
+          "units": ["percent"],
+          "min": 20,
+          "max": 100,
+          "lab": false,
+          "impute": true,
+          "concept": "FractionOfInspiredOxygen",
+          "default_value": 21,
+          "ffill_min": 21,
+          "ffill_max": 21, 
+          "ffill_limit": 120
+        }
+      },
+      "observations": {
+        "bodyT": {
+          "extract": true,
+          "name_param": "bodyT",
+          "units": ["Cel"],
+          "min": 33,
+          "max": 41, 
+          "lab": false,
+          "impute": true,
+          "concept": "BodyTemperature",
+          "perc_deviation": 0.3,
+          "ffill_min": 36.5,
+          "ffill_max": 37.5, 
+          "ffill_limit": 120
+        },
+        "weight": {
+          "extract": true,
+          "name_param": "weight",
+          "units": ["g", "kg"],
+          "min": 250,
+          "max": 6500, 
+          "lab": false,
+          "impute": true,
+          "concept": "BodyWeight",
+          "ffill_min": 250,
+          "ffill_max": 6500, 
+          "ffill_limit": 120
+        }
+      },
+      "ventilations": {
+        "PEEP": {
+          "extract": true,
+          "name_param": "PEEP",
+          "units": ["cmsblH2Osbr", "mbar"],
+          "min": 0,
+          "max": 15,
+          "lab": false,
+          "impute": false,
+          "concept": "PositiveEndExpiratoryPressure",
+          "priority": ["SNOMED-CT-258104002","SNOMED-CT-263760002"],
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        },
+        "VE": {
+          "extract": false,
+          "name_param": "VE",
+          "units": ["Lpermin"],
+          "min": 0,
+          "max": 10,
+          "lab": false,
+          "impute": false,
+          "concept": "MinuteVentilation",
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        },
+        "PIP": {
+          "extract": false,
+          "name_param": "PIP",
+          "units": ["cmsblH2Osbr", "mbar"],
+          "min": 0,
+          "max": 50,
+          "lab": false,
+          "impute": false,
+          "concept": "PeakInspiratoryPressure",
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        },
+        "MAP": {
+          "extract": true,
+          "name_param": "MAP",
+          "units": ["cmsblH2Osbr", "mbar"],
+          "min": 0,
+          "max": 30,
+          "lab": false,
+          "impute": false,
+          "concept": "MeanInspiratoryAirwayPressure",
+          "priority": ["SNOMED-CT-258104002","SNOMED-CT-263760002"],
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        }
+      },
+      "incubation": {
+        "CET": {
+          "extract": false,
+          "name_param": "CET",
+          "units": ["Cel"],
+          "min": 20,
+          "max": 39,
+          "lab": false,
+          "impute": false,
+          "concept": "ControlledEnvironmentTemperature",
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        },
+        "CEH": {
+          "extract": false,
+          "name_param": "CEH",
+          "units": ["percent"],
+          "min": 0,
+          "max": 100,
+          "lab": false,
+          "impute": false,
+          "concept": "ControlledEnvironmentHumidity",
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null
+        }
+      },
+      "labs": {
+        "PLT": {
+          "extract": true,
+          "name_param": "PLT",
+          "units": ["cblnbcbr"],
+          "min": 0,
+          "max": 1000,
+          "lab": true,
+          "impute": true,
+          "concept": "LabTestEvent",
+          "ffill_min": 0,
+          "ffill_max": 1000, 
+          "ffill_limit": 120
+        }
+      },
+      "medications": {
+        "steroids": {
+          "extract": true,
+          "name_param": "steroids",
+          "units": ["cblnbcbr"],
+          "min": 0,
+          "max": 1000,
+          "lab": false,
+          "impute": false,
+          "concept": "DrugAdministrationEvent",
+          "default_value": 0,
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null,
+          "drugs": {
+            "hydrocortisone": {
+              "extract": false,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "396458002": "Hydrocortisone (substance)",
+                  "708195009": "Hydrocortisone aceponate (substance)",
+                  "79380007": "Hydrocortisone acetate (substance)",
+                  "50665003": "Hydrocortisone butyrate (substance)",
+                  "109063008": "Hydrocortisone cypionate (substance)",
+                  "126150008": "Hydrocortisone probutate (substance)",
+                  "109064002": "Hydrocortisone sodium phosphate (substance)",
+                  "109066000": "Hydrocortisone sodium succinate (substance)",
+                  "51612003": "Hydrocortisone valerate (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=H02AB09>": "Hydrocortisone",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=H02AB09>": "Hydrocortisone"
+                }
+              }
+            },
+            "dexamethasone": {
+              "extract": false,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "372584003": "Dexamethasone (substance)",
+                  "109070008": "Dexamethasone acetate (substance)",
+                  "768495008": "Dexamethasone isonicotinate (substance)",
+                  "396016009": "Dexamethasone phosphate (substance)",
+                  "734623002": "Dexamethasone sodium metasulfobenzoate (substance)",
+                  "396017000": "Dexamethasone sodium phosphate (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=H02AB02>": "Dexamethasone",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=H02AB02>": "Dexamethasone",
+                  "<https://www.whocc.no/atc_ddd_index/?code=S01BA01>": "Dexamethasone",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=S01BA01>": "Dexamethasone"
+                }
+              }
+            }
+          }
+        },
+        "inotropes": {
+          "extract": true,
+          "name_param": "inotropes",
+          "units": ["cblnbcbr"],
+          "min": 0,
+          "max": 1000,
+          "lab": false,
+          "impute": false,
+          "concept": "DrugAdministrationEvent",
+          "default_value": 0,
+          "ffill_min": null,
+          "ffill_max": null, 
+          "ffill_limit": null,
+          "drugs": {
+            "milrinone": {
+              "extract": true,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "373441005": "Milrinone (substance)",
+                  "108481006": "Milrinone lactate (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CE02>": "Milrinone",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CE02>": "Milrinone"
+                }
+              }
+            },
+            "dobutamine": {
+              "extract": true,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "387145002": "Dobutamine (substance)",
+                  "90118002": "Dobutamine hydrochloride (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CA07>": "Dobutamine",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CA07>": "Dobutamine"
+                }
+              }
+            },
+            "dopamine": {
+              "extract": true,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "412383006": "Dopamine (substance)",
+                  "16257000": "Dopamine hydrochloride (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CA04>": "Dopamine",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CA04>": "Dopamine"
+                }
+              }
+            },
+            "epinephrine": {
+              "extract": true,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "387362001": "Epinephrine (substance)",
+                  "96254001": "Epinephrine acetate (substance)",
+                  "126134000": "Epinephrine bitartrate (substance)",
+                  "50685004": "Epinephrine hydrochloride (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CA24>": "Epinephrine",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CA24>": "Epinephrine"
+                }
+              }
+            },
+            "norepinephrine": {
+              "extract": true,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "45555007": "Norepinephrine (substance)",
+                  "77673009": "Norepinephrine bitartrate (substance)",
+                  "1013291000202108": "Norepinephrine hydrochloride (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CA03>": "Norepinephrine",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CA03>": "Norepinephrine"
+                }
+              }
+            },
+            "phenylephrine": {
+              "extract": false,
+              "default_unit": "ug",
+              "terminology": {
+                "snomed": {
+                  "372771005": "Phenylephrine (substance)",
+                  "68699004": "Phenylephrine bitartrate (substance)",
+                  "73946006": "Phenylephrine hydrochloride (substance)",
+                  "784324003": "Phenylephrine tannate (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=C01CA06>": "Phenylephrine",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=C01CA06>": "Phenylephrine"
+                }
+              }
+            },
+            "vasopressin": {
+              "extract": true,
+              "default_unit": "m[IU]",
+              "terminology": {
+                "snomed": {
+                  "77671006": "Vasopressin (substance)",
+                  "126192003": "Vasopressin tannate (substance)",
+                  "421078009": "Argipressin (substance)"
+                },
+                "atc": {
+                  "<https://www.whocc.no/atc_ddd_index/?code=H01BA01>": "Vasopressin",
+                  "<https://www.whocc.no/atc_ddd_index/?year=2024&code=H01BA01>": "Vasopressin"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "scores": {
+      "nSOFA": {
+        "compute": true
+      },
+      "VIS": {
+        "compute": true
+      },
+      "sf_ratio": {
+        "compute": true
+      }
+    },
+    
+    "features": {
+      "spikes_drops": {
+        "on_basis": "min",
+        "upstream": true,
+        "variables": ["HR", "SBP", "DBP", "RR", "SpO2", "FiO2", "PEEP", "MAP", "sf_ratio"]
+      },
+      "trends": {
+        "on_basis": "hour",
+        "upstream": false,
+        "variables": ["HR", "SBP", "DBP", "RR", "SpO2", "FiO2", "bodyT", "PEEP", "MAP", "sf_ratio"]
+      },
+      "std_feat": {
+        "on_basis": "min",
+        "upstream": true,
+        "variables": ["HR", "SBP", "DBP", "RR", "SpO2", "FiO2", "PEEP", "MAP", "sf_ratio"]
+      },
+      "kurt_skew": {
+        "on_basis": "min",
+        "upstream": true,
+        "kurtosis": true,
+        "skewness": true,
+        "variables": ["HR", "SBP", "DBP", "RR", "SpO2", "FiO2", "PEEP", "MAP", "sf_ratio"]
+      },
+      "entropy": {
+        "on_basis": "min",
+        "upstream": true,
+        "variables": ["HR", "SBP", "DBP", "RR", "SpO2", "FiO2", "PEEP", "MAP", "sf_ratio"]
+      },
+      "time_sepsis": {
+        "on_basis": "hour",
+        "upstream": false
+      }
+    },
+
+    "time_window_selection": {
+      "resampling_strategy": "continuous",
+      "resampling_frequency": 6,
+      "resampling_factor": 20
+    },
+
+    "patient_selection": {
+      "random": {
+        "extract": true
+      },
+      "knn": {
+        "extract": false,
+        "nb_time_windows_control": 3,
+        "shift_time_windows_controls": 6,
+        "columns": {
+          "numerical": [
+            "ga_weeks",
+            "birth_weight"
+          ],
+          "categorical": [
+            "sex"
+          ]
+        }
+      }
+    },
+
+    "patients_to_select": {
+      "sepsis": {
+        "include": ["sepsis_halos"],
+        "exclude": []
+      },
+      "controls": {
+        "include": [],
+        "exclude": ["nec", "sepsis", "death_hospital"]
+      }
+    },
+
+    "medications": {
+      "antibiotic": {
+        "SNOMED": {
+          "snomed:419241000": {
+            "_comment_": "Substance with antibacterial mechanism of action (substance)"
+          },
+          "snomed:372687004": {
+            "_comment_": "Amoxicillin (substance)"
+          },
+          "snomed:387531004": {
+            "_comment_": "Azithromycin (substance)"
+          },
+          "snomed:323389000": {
+            "_comment_": "Benzylpenicillin (substance)"
+          },
+          "snomed:387470007": {
+            "_comment_": "Cefazolin (substance)"
+          },
+          "snomed:96048006": {
+            "_comment_": "Cefepim (substance)"
+          },
+          "snomed:387200005": {
+            "_comment_": "Ceftazidim (substance)"
+          },
+          "snomed:372670001": {
+            "_comment_": "Ceftriaxon (substance)"
+          },
+          "snomed:387487009": {
+            "_comment_": "Clarithromycin (substance)"
+          },
+          "snomed:387544009": {
+            "_comment_": "Flucloxacillin (substance)"
+          },
+          "snomed:387540000": {
+            "_comment_": "Meropenem (substance)"
+          },
+          "snomed:372602008": {
+            "_comment_": "Metronidazol (substance)"
+          },
+          "snomed:412439003": {
+            "_comment_": "Moxifloxacin(substance)"
+          },
+          "snomed:387397004": {
+            "_comment_": "Mupirocin (substance)"
+          },
+          "snomed:372836004": {
+            "_comment_": "Piperacillin (substance)"
+          },
+          "snomed:96007008": {
+            "_comment_": "Tazobactam (substance)"
+          },
+          "snomed:372735009": {
+            "_comment_": "Vancomycin (substance)"
+          }
+        },
+        "ATC": {
+          "<https://www.whocc.no/atc_ddd_index/?code=J01>": {
+            "_comment_": [
+              "J - Antiinfectives for systemic use",
+              "J01 - Antibacterial for systemic use"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=J04AB02>": {
+            "_comment_": [
+              "J - Antiinfectives for systemic use",
+              "J04 - Antimycobacterials",
+              "J04A - Drug for treatment of tuberculosis",
+              "J04AB - Antibiotics",
+              "J04AB02 - Rifampicin"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=S01AA>": {
+            "_comment_": [
+              "S - Sensory organs",
+              "S01 - Ophthalmologicals",
+              "S01A - Antiinfectives",
+              "S01AA - Antibiotics"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D07CC05>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D07 - Corticosteroids, dermatologicals preparations",
+              "D07C - Corticosteroids, combinations with antibiotics",
+              "D07CC - Corticosteroids, potent, combinations with antibiotics",
+              "D07CC05 - Fluocinonide and antibiotics"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D07CB04>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D07 - Corticosteroids, dermatologicals preparations",
+              "D07C - Corticosteroids, combinations with antibiotics",
+              "D07CB - Corticosteroids, moderately potent, combinations with antibiotics",
+              "D07CB04 - Dexamethasone and antibiotics"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D07CA01>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D07 - Corticosteroids, dermatologicals preparations",
+              "D07C - Corticosteroids, combinations with antibiotics",
+              "D07CC - Corticosteroids, weak, combinations with antibiotics",
+              "D07CA01 - Hydrocortisone and antibiotics"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D06AX01>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D06 - Antibiotics and chemiothrapeutics for dermatological use",
+              "D06A - Antibiotics for topical use",
+              "D06AX - Other antibiotics for topical use",
+              "D06AX01 - Fusidic acid"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=R01AX06>": {
+            "_comment_": [
+              "R - Respiratory system",
+              "R01 - Nasal preparations",
+              "R01A - Decongestants and other nasal preparations for topical use",
+              "R01AX - Other nasal preparations",
+              "R01AX06 - Mupirocin"
+            ]
+          }
+        }
+      },
+      "antifungal": {
+        "SNOMED": {
+          "snomed:373219008": {
+            "_comment_": "Substance with antifungal mechanism of action (substance)"
+          },
+          "snomed:387325003": {
+            "_comment_": "Clotrimazol (substance)"
+          },
+          "snomed:372738006": {
+            "_comment_": "Miconazol (substance)"
+          }
+        },
+        "ATC": {
+          "<https://www.whocc.no/atc_ddd_index/?code=J02>": {
+            "_comment_": [
+              "J - Antiinfectives for systemic use",
+              "J02 - Antimycotics for systemic use"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D01AC20>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D01 - Antifungals for dermatological use",
+              "D01A - Antifungals for topical use",
+              "D01AC - Imidazole and triazole derivatives",
+              "D01AC20 - Imidazoles/triazoles in combination with corticosteroids"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D01AC01>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D01 - Antifungals for dermatological use",
+              "D01A - Antifungals for topical use",
+              "D01AC - Imidazole and triazole derivatives",
+              "D01AC01 - Clotrimazole"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=A07AA02>": {
+            "_comment_": [
+              "A - Alimentary tract and metabolism",
+              "A07 - Antidiarrheals, intestinal antiinflammatory/antiinfective agents",
+              "A07A - Intestinal antiinfectives",
+              "A07AA - Antibiotics",
+              "A07AA02 - Nystatin"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=D01AC02>": {
+            "_comment_": [
+              "D - Dermatologicals",
+              "D01 - Antifungals for dermatological use",
+              "D01A - Antifungals for topical use",
+              "D01AC - Imidazole and triazole derivatives",
+              "D01AC02 - Miconazole"
+            ]
+          },
+          "<https://www.whocc.no/atc_ddd_index/?code=A01AB09>": {
+            "_comment_": [
+              "A - Alimentary tract and metabolism",
+              "A01 - Stomatological preparations",
+              "A01A - Stomatological preparations",
+              "A01AB - Antiinfectives and antiseptics for local oral treatment",
+              "A01AB09 - Miconazole"
+            ]
+          }
+        }
+      },
+      "antiviral": {
+        "SNOMED": {
+          "snomed:372701006": {
+            "_comment_": "Substance with antiviral mechanism of action (substance)"
+          }
+        },
+        "ATC": {
+          "<https://www.whocc.no/atc_ddd_index/?code=J05>": {
+            "_comment_": [
+              "J - Antiinfectives for systemic use",
+              "J05 - Antivirals for systemic use"
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  "paths": {
+    "demographics": "./data/demographics.parquet",
+    "checkpoint": "./data/data_processing/",
+    "logs": "./logs/data_processing/",
+    "config": "./config/data_processing/",
+
+    "GraphDB_credentials": "./secrets/graphdb.json",
+    "queries": "./queries/",
+    "time_series": {
+        "CHUV": "./data/time_series/CHUV/",
+        "KISPI": "./data/time_series/KISPI/",
+        "USZ": "./data/time_series/USZ/"
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+    "demographics": {
+        "columns": {
+            "stay_id": {
+                "_comment_": "unique identifier for the hospital stay"
+            },
+            "sex": {
+                "_comment_": "administrative sex of the newborn (e.g. {0: F, 1: M})"
+            },
+            "birth_date": {
+                "_comment_": "date of birth of the newborn"
+            },
+            "birth_weight": {
+                "_comment_": "birth weight in grams",
+                "min": 0,
+                "max": 6000
+            },
+            "adm_date": {
+                "_comment_": "exact date and time of admission to the hospital"
+            },
+            "adm_date_rounded": {
+                "_comment_": "rounded date of admission"
+            },
+            "age_at_admission_days": {
+                "_comment_": "rounded age in days at the time of admission",
+                "min": 0
+            },
+            "length_stay": {
+                "_comment_": "total length of stay in the neonatology department (NAT)"
+            },
+            "length_stay_hours": {
+                "_comment_": "total length of stay in hours in the neonatology department (NAT)"
+            },
+            "ga_days": {
+                "_comment_": "rounded gestational age at birth in days"
+            },
+            "ga_weeks": {
+                "_comment_": "rounded gestational age at birth in weeks",
+                "min": 22,
+                "max": 44
+            },
+            "death": {
+                "_comment_": "flag indicating if the newborn died during hospitalization"
+            },
+            "death_hospital": {
+                "_comment_": "flag indicating if death occurred in the hospital"
+            },
+            "death_nat": {
+                "_comment_": "flag indicating if death occurred in the neonatology department"
+            },
+            "death_date": {
+                "_comment_": "date and time of death, if applicable"
+            },
+            "sepsis": {
+                "_comment_": "flag indicating whether the newborn developed sepsis"
+            },
+            "sepsis_halos": {
+                "_comment_": "flag for Hospital-Acquired Late On-Set (HALOS) sepsis"
+            },
+            "nec": {
+                "_comment_": "flag for necrotizing enterocolitis diagnosis"
+            },
+            "infection": {
+                "_comment_": "flag for other infections not classified as sepsis"
+            },
+            "rop": {
+                "_comment_": "flag for retinopathy of prematurity (ROP)"
+            },
+            "bpd": {
+                "_comment_": "flag for bronchopulmonary dysplasia (BPD)"
+            },
+            "pvl": {
+                "_comment_": "flag for periventricular leukomalacia (PVL)"
+            },
+            "ivh": {
+                "_comment_": "flag for intraventricular hemorrhage (IVH)"
+            },
+            "neg_outcomes": {
+                "_comment_": "flag for presence of any negative outcome (composite variable)"
+            },
+            "datetime_hemoculture": {
+                "_comment_": "date and time of first positive hemoculture for sepsis"
+            },
+            "datetime_hemoculture_sepsis_not_confirmed": {
+                "_comment_": "date and time of hemoculture taken but sepsis not confirmed"
+            },
+            "time_hours_sepsis": {
+                "_comment_": "time from admission to sepsis onset in hours"
+            },
+            "pma_at_admission": {
+                "_comment_": "postmenstrual age at admission"
+            },
+            "pma_at_admission_days": {
+                "_comment_": "rounded postmenstrual age at admission in days"
+            },
+            "pma_at_admission_weeks": {
+                "_comment_": "rounded postmenstrual age at admission in weeks"
+            },
+            "to_cut_5d_abx": {
+                "_comment_": "flag for 5-day antibiotic continuous discontinuation"
+            },
+            "time_to_cut_5d_abx": {
+                "_comment_": "time from admission to end of 5-day antibiotic window"
+            },
+            "time_hours_abx": {
+                "_comment_": "time of antibiotic administration from admission (in hours)"
+            },
+            "control_trajectories": {
+                "_comment_": "flag for control (non-septic) cases in trajectory analysis"
+            },
+            "incl_criteria_trajectories": {
+                "_comment_": "flag indicating whether patient meets inclusion criteria for trajectory analysis"
+            },
+            "incl_criteria_prediction": {
+                "_comment_": "flag indicating whether patient is included in predictive trajectory modeling"
+            },
+            "start_record": {
+                "_comment_": "timestamp marking the start of usable time series data for antibiotics"
+            }
+        }
+    },
+    "vitals": {
+        "columns": {
+            "HR": {
+                "_comment_": "heart rate in beats per minute",
+                "min": 0,
+                "max": 250
+            },
+            "SpO2": {
+                "_comment_": "peripheral capillary oxygen saturation (%)",
+                "min": 20,
+                "max": 100
+            },
+            "RR": {
+                "_comment_": "respiratory rate in breaths per minute",
+                "min": 10,
+                "max": 120
+            },
+            "SBP": {
+                "_comment_": "systolic blood pressure in mmHg",
+                "min": 10,
+                "max": 150
+            },
+            "DBP": {
+                "_comment_": "diastolic blood pressure in mmHg",
+                "min": 10,
+                "max": 100
+            },
+            "FiO2": {
+                "_comment_": "fraction of inspired oxygen (%)",
+                "min": 10,
+                "max": 100
+            },
+            "bodyT": {
+                "_comment_": "body temperature in degrees Celsius",
+                "min": 30,
+                "max": 42
+            }
+        }
+    }
+}

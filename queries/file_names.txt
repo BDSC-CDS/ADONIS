@@ -1,0 +1,22 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?hospital ?patient_id ?file_name ?concept
+WHERE {
+    ?patient a sphn:SubjectPseudoIdentifier ;
+            sphn:hasIdentifier ?patient_id ;
+            sphn:hasDataProvider/sphn:hasInstitutionCode/sphn:hasName ?hospital .
+
+    ?file a sphn:TimeSeriesDataFile ;
+        sphn:hasName ?file_name ;
+        sphn:hasSubjectPseudoIdentifier ?patient .
+
+    OPTIONAL {
+        ?measurement rdf:type ?type ;
+                        sphn:hasDataFile ?file .
+
+        ?type rdfs:subClassOf sphn:Result ;
+                rdfs:label ?concept .
+    }
+}

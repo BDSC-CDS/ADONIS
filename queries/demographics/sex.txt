@@ -1,0 +1,36 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+PREFIX snomed: <http://snomed.info/id/>
+
+SELECT DISTINCT *
+WHERE {
+    {
+        SELECT ?patient_id 
+               ("M" AS ?sex)
+        WHERE {
+            ?patient a sphn:SubjectPseudoIdentifier ;
+                     sphn:hasIdentifier ?patient_id .
+
+            ?adm_sex a sphn:AdministrativeSex ;
+                     sphn:hasCode ?sex_code ;
+                     sphn:hasSubjectPseudoIdentifier ?patient .
+
+            ?sex_code a snomed:248153007 .
+        }
+    }
+    UNION
+    {
+        SELECT ?patient_id 
+               ("F" AS ?sex)
+        WHERE {
+            ?patient a sphn:SubjectPseudoIdentifier ;
+                     sphn:hasIdentifier ?patient_id .
+
+            ?adm_sex a sphn:AdministrativeSex ;
+                     sphn:hasCode ?sex_code ;
+                     sphn:hasSubjectPseudoIdentifier ?patient .
+
+            ?sex_code a snomed:248152002 .
+        }
+    }
+}
+

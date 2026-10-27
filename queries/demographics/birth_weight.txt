@@ -1,0 +1,32 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX snomed: <http://snomed.info/id/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?patient_id 
+       (AVG(?bw_value) AS ?birth_weight) 
+WHERE {
+    ?patient a sphn:SubjectPseudoIdentifier ;
+             sphn:hasIdentifier ?patient_id .
+    
+    ?measurement a sphn:BodyWeightMeasurement ;
+                 sphn:hasSubjectPseudoIdentifier ?patient ;
+                 sphn:hasResult ?body_weight .
+
+    ?body_weight a sphn:BodyWeight ;
+                 sphn:hasDateTime ?bw_date ;
+                 sphn:hasQuantity/sphn:hasValue ?bw_value .
+
+    ?birth_date a sphn:BirthDate ;
+                sphn:hasSubjectPseudoIdentifier ?patient ;
+                sphn:hasDay ?birth_day ;
+                sphn:hasMonth ?birth_month ;
+                sphn:hasYear ?birth_year .
+
+    FILTER((xsd:integer(SUBSTR(STR(?birth_day), 4, 2)))=day(?bw_date) && 
+        (xsd:integer(SUBSTR(STR(?birth_month), 3, 2)))=month(?bw_date) &&
+        (xsd:integer(STR(?birth_year)))=year(?bw_date))
+      
+}
+GROUP BY ?patient_id
+

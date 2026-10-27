@@ -1,0 +1,19 @@
+PREFIX sphn: <https://biomedit.ch/rdf/sphn-schema/sphn#>
+
+SELECT DISTINCT ?patient_id
+                (IF(BOUND(?death), 1, 0) AS ?death_status)
+                (CONCAT(SUBSTR(STR(?death_day), 4, 2), ".",
+                SUBSTR(STR(?death_month), 3, 2), ".",
+                STR(?death_year)) AS ?death_date)
+WHERE {
+    ?patient a sphn:SubjectPseudoIdentifier ;
+   		     sphn:hasIdentifier ?patient_id .
+    
+    OPTIONAL {
+        ?death a sphn:DeathDate ;
+           sphn:hasDay ?death_day ;
+           sphn:hasMonth ?death_month ;
+           sphn:hasYear ?death_year ;
+           sphn:hasSubjectPseudoIdentifier ?patient .
+    }
+}
